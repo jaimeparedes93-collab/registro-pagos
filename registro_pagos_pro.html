@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Pagos</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c7be5">
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    font-family:"Segoe UI",Arial;
+    background:#eef1f5;
+    margin:0;
+}
+.app{
+    max-width:1100px;
+    margin:15px auto;
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,.1);
+}
+h2{text-align:center;}
+
+input,select,textarea,button{
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+    width:100%;
+}
+textarea{resize:none;}
+
+button{
+    background:#2c7be5;
+    color:white;
+    border:none;
+}
+button:active{opacity:.8}
+
+.grid,.filters{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.table-container{overflow-x:auto}
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+th,td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+th{background:#f4f6f8}
+.delete{color:red;cursor:pointer}
+
+/* CARDS */
+.cards{
+    display:none;
+}
+.card{
+    background:#f9fafc;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,.08);
+}
+.card h4{margin:0 0 5px}
+.card small{color:#555}
+
+.summary{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    font-weight:bold;
+    margin-top:10px;
+}
+.actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    margin-top:10px;
+}
+
+/* 📱 MOBILE */
+@media(max-width:768px){
+    .grid,.filters{grid-template-columns:1fr}
+    .table-container{display:none}
+    .cards{display:block}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<h2>Registro de Pagos Quintas de Alejandro</h2>
+
+<!-- FORM -->
+<div class="grid">
+    <input id="casa" placeholder="Casa">
+    <input id="fecha" type="date">
+    <select id="tipo">
+        <option value="">Tipo</option>
+        <option>Efectivo</option>
+        <option>Transferencia</option>
+    </select>
+    <input id="valor" placeholder="Valor $">
+    <textarea id="nota" placeholder="Nota"></textarea>
+</div>
+<button onclick="guardarPago()">Registrar pago</button>
+
+<!-- FILTER -->
+<div class="filters">
+    <input type="month" id="mes">
+    <input placeholder="Casa" id="casaFiltro">
+    <select id="tipoFiltro">
+        <option value="">Tipo</option>
+        <option>Efectivo</option>
+        <option>Transferencia</option>
+    </select>
+    <button onclick="filtrar()">Filtrar</button>
+    <button onclick="limpiarFiltro()">Limpiar</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+<table>
+<thead>
+<tr><th>Casa</th><th>Fecha</th><th>Tipo</th><th>Valor</th><th>Nota</th><th></th></tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+</div>
+
+<!-- CARDS -->
+<div class="cards" id="cards"></div>
+
+<!-- TOTAL -->
+<div class="summary">
+    <div id="totalGeneral">Total general: $0</div>
+    <div id="totalFiltro">Total filtrado: $0</div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+    <button onclick="exportarPDF()">📄 PDF Resumen</button>
+    <button onclick="exportarPDFDetalle()">🧾 PDF Detallado</button>
+</div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+
+const formato = v => v.toLocaleString("es-CO",{style:"currency",currency:"COP",minimumFractionDigits:0});
+
+let pagos = JSON.parse(localStorage.getItem("pagos")) || [];
+let pagosFiltrados=[...pagos];
+fecha.valueAsDate=new Date();
+
+function guardarPago(){
+    let v=valor.value.replace(/\D/g,"");
+    if(!casa.value||!fecha.value||!tipo.value||!v)return alert("Complete todo");
+    pagos.push({casa:casa.value,fecha:fecha.value,tipo:tipo.value,valor:+v,nota:nota.value});
+    localStorage.setItem("pagos",JSON.stringify(pagos));
+    limpiarCampos();mostrar(pagos);
+}
+
+function mostrar(lista){
+    tabla.innerHTML="";cards.innerHTML="";
+    let total=0;
+    lista.forEach((p,i)=>{
+        total+=p.valor;
+        tabla.innerHTML+=`
+        <tr>
+            <td>${p.casa}</td><td>${p.fecha}</td><td>${p.tipo}</td>
+            <td>${formato(p.valor)}</td><td>${p.nota||""}</td>
+            <td class="delete" onclick="borrar(${i})">🗑️</td>
+        </tr>`;
+        cards.innerHTML+=`
+        <div class="card">
+            <h4>Casa ${p.casa}</h4>
+            <small>${p.fecha} · ${p.tipo}</small>
+            <p><b>${formato(p.valor)}</b></p>
+            <small>${p.nota||""}</small><br>
+            <span class="delete" onclick="borrar(${i})">Eliminar</span>
+        </div>`;
+    });
+    totalFiltro.innerText="Total filtrado: "+formato(total);
+    totalGeneral.innerText="Total general: "+formato(pagos.reduce((s,p)=>s+p.valor,0));
+}
+
+function borrar(i){
+    if(confirm("Eliminar pago?")){
+        pagos.splice(i,1);
+        localStorage.setItem("pagos",JSON.stringify(pagos));
+        mostrar(pagos);
+    }
+}
+
+function filtrar(){
+    pagosFiltrados=pagos.filter(p=>
+        (!mes.value||p.fecha.startsWith(mes.value)) &&
+        (!casaFiltro.value||p.casa.includes(casaFiltro.value)) &&
+        (!tipoFiltro.value||p.tipo===tipoFiltro.value)
+    );
+    mostrar(pagosFiltrados);
+}
+function limpiarFiltro(){
+    mes.value=casaFiltro.value=tipoFiltro.value="";
+    mostrar(pagos);
+}
+function limpiarCampos(){
+    casa.value=valor.value=nota.value=tipo.value="";
+    fecha.valueAsDate=new Date();
+}
+
+/* PDF */
+function exportarPDF(){
+    const d=new jsPDF();let y=20,r={};pagosFiltrados.forEach(p=>r[p.casa]=(r[p.casa]||0)+p.valor);
+    for(let c in r){d.text(`Casa ${c}: ${formato(r[c])}`,10,y);y+=8}
+    d.save("resumen.pdf");
+}
+function exportarPDFDetalle(){
+    const d=new jsPDF();let y=15,t=0;
+    pagosFiltrados.forEach(p=>{
+        d.text(`${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,10,y);
+        y+=6;t+=p.valor;if(y>280){d.addPage();y=15}
+    });
+    d.text("TOTAL: "+formato(t),10,y+10);d.save("detalle.pdf");
+}
+
+mostrar(pagos);
+
+/* SERVICE WORKER */
+if("serviceWorker"in navigator){
+    navigator.serviceWorker.register("sw.js");
+}
+</script>
+</body>
+</html>
