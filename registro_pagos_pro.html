@@ -170,35 +170,79 @@ let pagosFiltrados=[...pagos];
 fecha.valueAsDate=new Date();
 
 function guardarPago(){
-    let v=valor.value.replace(/\D/g,"");
-    if(!casa.value||!fecha.value||!tipo.value||!v)return alert("Complete todo");
-    pagos.push({casa:casa.value,fecha:fecha.value,tipo:tipo.value,valor:+v,nota:nota.value});
-    localStorage.setItem("pagos",JSON.stringify(pagos));
-    limpiarCampos();mostrar(pagos);
+let v = valor.value.replace(/\D/g,"");
+
+if(!casa.value || !fecha.value || !tipo.value || !v){
+    return alert("Complete todo");
+}
+
+const mesPago = fecha.value.substring(0,7);
+
+const existePago = pagos.some(p =>
+p.casa === casa.value &&
+p.fecha.substring(0,7) === mesPago
+);
+
+if(existePago){
+alert(`La casa ${casa.value} ya tiene un pago registrado para este mes.`);
+return;
+}
+
+pagos.push({
+    casa:casa.value,
+    fecha:fecha.value,
+    tipo:tipo.value,
+    valor:+v,
+    nota:nota.value
+});
+
+pagosFiltrados = [...pagos];
+
+localStorage.setItem("pagos", JSON.stringify(pagos));
+
+limpiarCampos();
+mostrar(pagos);
+
 }
 
 function mostrar(lista){
-    tabla.innerHTML="";cards.innerHTML="";
-    let total=0;
-    lista.forEach((p,i)=>{
-        total+=p.valor;
-        tabla.innerHTML+=`
-        <tr>
-            <td>${p.casa}</td><td>${p.fecha}</td><td>${p.tipo}</td>
-            <td>${formato(p.valor)}</td><td>${p.nota||""}</td>
-            <td class="delete" onclick="borrar(${i})">🗑️</td>
-        </tr>`;
-        cards.innerHTML+=`
-        <div class="card">
-            <h4>Casa ${p.casa}</h4>
-            <small>${p.fecha} · ${p.tipo}</small>
-            <p><b>${formato(p.valor)}</b></p>
-            <small>${p.nota||""}</small><br>
-            <span class="delete" onclick="borrar(${i})">Eliminar</span>
-        </div>`;
-    });
-    totalFiltro.innerText="Total filtrado: "+formato(total);
-    totalGeneral.innerText="Total general: "+formato(pagos.reduce((s,p)=>s+p.valor,0));
+
+const listaOrdenada = [...lista].sort(
+    (a,b) => Number(a.casa) - Number(b.casa)
+);
+
+tabla.innerHTML="";
+cards.innerHTML="";
+
+let total=0;
+
+listaOrdenada.forEach((p)=>{
+
+    total+=p.valor;
+
+    tabla.innerHTML+=`
+    <tr>
+        <td>${p.casa}</td>
+        <td>${p.fecha}</td>
+        <td>${p.tipo}</td>
+        <td>${formato(p.valor)}</td>
+        <td>${p.nota||""}</td>
+        <td class="delete" onclick="borrar(${pagos.indexOf(p)})">🗑️</td>
+    </tr>`;
+
+    cards.innerHTML+=`
+    <div class="card">
+        <h4>Casa ${p.casa}</h4>
+        <small>${p.fecha} · ${p.tipo}</small>
+        <p><b>${formato(p.valor)}</b></p>
+        <small>${p.nota||""}</small><br>
+        <span class="delete" onclick="borrar(${pagos.indexOf(p)})">Eliminar</span>
+    </div>`;
+});
+
+totalFiltro.innerText="Total filtrado: "+formato(total);
+totalGeneral.innerText="Total general: "+formato(pagos.reduce((s,p)=>s+p.valor,0));
+
 }
 
 function borrar(i){
@@ -218,9 +262,17 @@ function filtrar(){
     mostrar(pagosFiltrados);
 }
 function limpiarFiltro(){
-    mes.value=casaFiltro.value=tipoFiltro.value="";
-    mostrar(pagos);
+
+mes.value = "";
+casaFiltro.value = "";
+tipoFiltro.value = "";
+
+pagosFiltrados = [...pagos];
+
+mostrar(pagos);
+
 }
+
 function limpiarCampos(){
     casa.value=valor.value=nota.value=tipo.value="";
     fecha.valueAsDate=new Date();
@@ -228,17 +280,68 @@ function limpiarCampos(){
 
 /* PDF */
 function exportarPDF(){
-    const d=new jsPDF();let y=20,r={};pagosFiltrados.forEach(p=>r[p.casa]=(r[p.casa]||0)+p.valor);
-    for(let c in r){d.text(`Casa ${c}: ${formato(r[c])}`,10,y);y+=8}
-    d.save("resumen.pdf");
+
+const d = new jsPDF();
+
+let y = 20;
+let resumen = {};
+let totalGeneral = 0;
+
+pagosFiltrados.forEach(p=>{
+    resumen[p.casa] = (resumen[p.casa] || 0) + p.valor;
+    totalGeneral += p.valor;
+});
+
+const casasOrdenadas = Object.keys(resumen).sort(
+    (a,b) => Number(a) - Number(b)
+);
+
+d.text("Resumen de Pagos por Casa",10,10);
+
+casasOrdenadas.forEach(casa=>{
+    d.text(`Casa ${casa}: ${formato(resumen[casa])}`,10,y);
+    y += 8;
+});
+
+d.text(`TOTAL GENERAL: ${formato(totalGeneral)}`,10,y+10);
+
+d.save("resumen.pdf");
+
+
 }
+
 function exportarPDFDetalle(){
-    const d=new jsPDF();let y=15,t=0;
-    pagosFiltrados.forEach(p=>{
-        d.text(`${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,10,y);
-        y+=6;t+=p.valor;if(y>280){d.addPage();y=15}
-    });
-    d.text("TOTAL: "+formato(t),10,y+10);d.save("detalle.pdf");
+
+const d = new jsPDF();
+
+let y = 15;
+let t = 0;
+
+const pagosOrdenados = [...pagosFiltrados].sort(
+    (a,b) => Number(a.casa) - Number(b.casa)
+);
+
+pagosOrdenados.forEach(p=>{
+
+    d.text(
+        `${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,
+        10,
+        y
+    );
+
+    y += 6;
+    t += p.valor;
+
+    if(y > 280){
+        d.addPage();
+        y = 15;
+    }
+});
+
+d.text("TOTAL: "+formato(t),10,y+10);
+
+d.save("detalle.pdf");
+
 }
 
 mostrar(pagos);
