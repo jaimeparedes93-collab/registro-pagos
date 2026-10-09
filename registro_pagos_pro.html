@@ -3,142 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro de Pagos</title>
+<title>Registro de Pagos · Quintas de Alejandro</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2c7be5">
+<meta name="theme-color" content="#1e40af">
 
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+:root{
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --navy:#1e3a8a;
+    --success:#15803d;
+    --success-bg:#f0fdf4;
+    --success-border:#bbf7d0;
+    --warning:#b45309;
+    --warning-bg:#fffbeb;
+    --warning-border:#fde68a;
+    --danger:#dc2626;
+    --danger-bg:#fef2f2;
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:#e2e8f0;
+}
+
 *{
     box-sizing:border-box;
 }
+
 body{
-    font-family:"Segoe UI",Arial,sans-serif;
-    background:#eef1f5;
+    font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    background:var(--bg);
     margin:0;
-    color:#1e293b;
+    padding:16px 10px 32px;
+    color:var(--text);
 }
+
 .app{
-    max-width:1100px;
-    margin:15px auto;
-    background:white;
-    padding:15px;
-    border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,.1);
-}
-h2{
-    text-align:center;
-    margin-top:5px;
+    max-width:1120px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
 }
 
-input,select,textarea,button{
-    padding:10px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    font-size:14px;
-    width:100%;
-}
-textarea{resize:none;}
-
-button{
-    background:#2c7be5;
+/* CABECERA PRINCIPAL */
+.hero-header{
+    background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);
     color:white;
-    border:none;
-    cursor:pointer;
-    font-weight:600;
+    padding:20px 22px;
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(30,58,138,.18);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
 }
-button:active{opacity:.8}
-
-/* PANEL DE ESTADÍSTICAS */
-.stats-panel{
-    background:#f8fafd;
-    border:1px solid #dce6f4;
+.hero-header h2{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:-0.3px;
+}
+.hero-header p{
+    margin:4px 0 0;
+    font-size:13px;
+    color:#dbeafe;
+}
+.hero-meta{
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);
+    padding:8px 14px;
     border-radius:12px;
-    padding:14px;
-    margin-bottom:18px;
+    font-size:12px;
 }
-.stats-header{
+.hero-meta span{
+    display:block;
+    color:#bfdbfe;
+}
+.hero-meta strong{
+    font-size:14px;
+    color:#ffffff;
+}
+
+/* SECCIONES EN TARJETA */
+.section-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px 20px;
+    box-shadow:0 4px 12px rgba(15,23,42,.04);
+}
+.section-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     flex-wrap:wrap;
     gap:10px;
-    margin-bottom:12px;
-    padding-bottom:10px;
-    border-bottom:1px solid #e2e8f0;
+    padding-bottom:12px;
+    margin-bottom:16px;
+    border-bottom:1px solid #f1f5f9;
 }
-.stats-header h3{
+.section-title{
     margin:0;
     font-size:16px;
-    color:#1e3a5f;
+    font-weight:700;
+    color:#0f172a;
 }
-.stats-header small{
-    display:block;
-    color:#64748b;
+.section-subtitle{
+    margin:3px 0 0;
     font-size:12px;
-    margin-top:2px;
+    color:var(--muted);
 }
+
+/* CONTROLES E INPUTS */
+label.field-label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:#475569;
+    margin-bottom:5px;
+}
+input,select,textarea,button{
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    font-size:14px;
+    width:100%;
+    font-family:inherit;
+    transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+input,select,textarea{
+    background:#f8fafc;
+    color:var(--text);
+}
+input:focus,select:focus,textarea:focus{
+    outline:none;
+    background:#ffffff;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+textarea{
+    resize:none;
+}
+
+button{
+    background:var(--primary);
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+}
+button:hover{
+    background:var(--primary-dark);
+}
+button:active{
+    transform:translateY(1px);
+}
+.btn-secondary{
+    background:#e2e8f0;
+    color:#1e293b;
+}
+.btn-secondary:hover{
+    background:#cbd5e1;
+}
+.btn-quick{
+    width:auto;
+    padding:7px 12px;
+    font-size:12px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    border:1px solid #bfdbfe;
+    border-radius:8px;
+}
+.btn-quick:hover{
+    background:#dbeafe;
+}
+
+/* 1. PANEL DE ESTADÍSTICAS */
 .stats-month-selector{
     display:flex;
     align-items:center;
     gap:8px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    padding:6px 10px;
+    border-radius:10px;
 }
 .stats-month-selector label{
-    font-size:13px;
+    font-size:12px;
     font-weight:600;
+    color:#475569;
     white-space:nowrap;
 }
 .stats-month-selector input{
     width:auto;
-    padding:7px 10px;
+    padding:6px 10px;
     background:white;
+    font-weight:600;
 }
 .stats-grid{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:10px;
-    margin-bottom:12px;
+    gap:12px;
+    margin-bottom:14px;
 }
 .stat-card{
-    background:white;
-    border:1px solid #e5eaf2;
-    border-radius:8px;
-    padding:10px 12px;
-    box-shadow:0 2px 4px rgba(0,0,0,.03);
+    background:#ffffff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+}
+.stat-card.highlight-green{
+    background:var(--success-bg);
+    border-color:var(--success-border);
+}
+.stat-card.highlight-blue{
+    background:#eff6ff;
+    border-color:#bfdbfe;
+}
+.stat-card.highlight-amber{
+    background:var(--warning-bg);
+    border-color:var(--warning-border);
 }
 .stat-label{
     font-size:12px;
-    color:#64748b;
+    font-weight:600;
+    color:#475569;
     margin-bottom:4px;
 }
 .stat-value{
-    font-size:17px;
-    font-weight:700;
+    font-size:20px;
+    font-weight:800;
     color:#0f172a;
 }
-.stat-value.green{color:#16794b;}
-.stat-value.blue{color:#2c7be5;}
-.stat-value.orange{color:#c2410c;}
+.stat-value.green{color:var(--success);}
+.stat-value.blue{color:var(--primary-dark);}
+.stat-value.orange{color:var(--warning);}
 .stat-sub{
     font-size:11px;
-    color:#64748b;
-    margin-top:3px;
+    color:var(--muted);
+    margin-top:4px;
 }
 
 /* BARRA DE PROGRESO */
 .progress-wrapper{
-    margin-top:6px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
 }
 .progress-labels{
     display:flex;
     justify-content:space-between;
     font-size:12px;
     font-weight:600;
-    margin-bottom:5px;
+    margin-bottom:6px;
     color:#334155;
 }
 .progress-track{
@@ -151,89 +277,225 @@ button:active{opacity:.8}
 .progress-fill{
     height:100%;
     width:0%;
-    background:linear-gradient(90deg,#2c7be5,#16794b);
+    background:linear-gradient(90deg,#2563eb,#16a34a);
     border-radius:999px;
-    transition:width .3s ease;
+    transition:width .35s ease;
 }
 
-/* ADVERTENCIAS DE DIFERENCIA DE CUOTA */
+/* ADVERTENCIAS DE DIFERENCIA */
 .diff-badge{
     display:inline-block;
-    margin-top:3px;
-    padding:2px 6px;
+    margin-top:4px;
+    padding:2px 7px;
     font-size:11px;
     font-weight:600;
     color:#9a3412;
     background:#ffedd5;
     border:1px solid #fdba74;
-    border-radius:4px;
+    border-radius:6px;
 }
 .stats-warning{
     display:none;
-    margin-top:10px;
-    padding:9px 12px;
-    background:#fffbeb;
-    border:1px solid #fcd34d;
-    border-radius:8px;
+    margin-top:12px;
+    padding:10px 14px;
+    background:var(--warning-bg);
+    border:1px solid var(--warning-border);
+    border-radius:10px;
     font-size:12px;
     color:#92400e;
+    line-height:1.4;
 }
 
-.grid,.filters{
+/* 2. FORMULARIO DE REGISTRO */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:12px;
+    margin-bottom:14px;
+}
+.form-footer{
+    display:flex;
+    justify-content:flex-end;
+}
+.btn-registrar{
+    width:auto;
+    min-width:200px;
+    padding:11px 22px;
+    font-size:14px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(37,99,235,.22);
+}
+
+/* 3. FILTROS Y TABLA */
+.filters-box{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:16px;
+}
+.filters{
     display:grid;
     grid-template-columns:repeat(5,1fr);
     gap:10px;
-    margin-bottom:10px;
+    align-items:end;
 }
-.filters{
-    margin-top:10px;
+.filters input,.filters select{
+    background:white;
 }
 
-.table-container{overflow-x:auto}
+.table-container{
+    overflow-x:auto;
+    border:1px solid var(--border);
+    border-radius:12px;
+}
 table{
     width:100%;
     border-collapse:collapse;
     min-width:700px;
 }
 th,td{
-    padding:8px;
-    border-bottom:1px solid #ddd;
+    padding:11px 12px;
+    border-bottom:1px solid var(--border);
     text-align:center;
+    font-size:13.5px;
 }
-th{background:#f4f6f8}
-.delete{color:red;cursor:pointer}
+th{
+    background:#f8fafc;
+    color:#475569;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    font-weight:700;
+}
+tbody tr:hover{
+    background:#f8fafc;
+}
+tbody tr:last-child td{
+    border-bottom:none;
+}
+.casa-pill{
+    font-weight:700;
+    color:#0f172a;
+}
+.tipo-text{
+    font-weight:600;
+    color:#334155;
+}
+.valor-cell{
+    font-weight:700;
+    color:#0f172a;
+}
+.delete{
+    color:var(--danger);
+    cursor:pointer;
+    font-weight:600;
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:6px;
+}
+.delete:hover{
+    background:var(--danger-bg);
+}
 
-/* CARDS */
+/* TARJETAS MÓVILES */
 .cards{
     display:none;
 }
 .card{
-    background:#f9fafc;
-    border-radius:10px;
-    padding:12px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
     margin-bottom:10px;
-    box-shadow:0 3px 8px rgba(0,0,0,.08);
 }
-.card h4{margin:0 0 5px}
-.card small{color:#555}
-
-.summary{
+.card-top{
     display:flex;
     justify-content:space-between;
-    flex-wrap:wrap;
-    font-weight:bold;
-    margin-top:10px;
+    align-items:flex-start;
+    gap:8px;
 }
-.actions{
+.card h4{
+    margin:0;
+    font-size:15px;
+    color:#0f172a;
+}
+.card small{
+    color:var(--muted);
+    font-size:12px;
+}
+.card-valor{
+    font-size:15px;
+    font-weight:800;
+    color:#0f172a;
+    text-align:right;
+}
+.card-footer{
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px solid var(--border);
     display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-    margin-top:10px;
+    justify-content:space-between;
+    align-items:center;
 }
-.actions button{
-    width:auto;
-    padding:10px 16px;
+
+/* TOTALES */
+.summary{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-top:16px;
+}
+.summary-box{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 16px;
+    font-weight:700;
+    font-size:15px;
+    color:#0f172a;
+}
+.summary-box.filtered{
+    background:#eff6ff;
+    border-color:#bfdbfe;
+    color:#1e3a8a;
+}
+
+/* 4. CENTRO DE DESCARGA DE REPORTES PDF */
+.reports-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+}
+.report-card{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:12px;
+}
+.report-card h4{
+    margin:0 0 4px;
+    font-size:15px;
+    color:#0f172a;
+}
+.report-card p{
+    margin:0;
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.4;
+}
+.btn-pdf-resumen{
+    background:var(--primary);
+}
+.btn-pdf-detalle{
+    background:#0f172a;
+}
+.btn-pdf-detalle:hover{
+    background:#1e293b;
 }
 
 /* 📱 MOBILE */
@@ -241,10 +503,10 @@ th{background:#f4f6f8}
     .stats-grid{grid-template-columns:repeat(2,1fr)}
     .stats-month-selector{width:100%;justify-content:space-between}
     .stats-month-selector input{flex:1}
-    .grid,.filters{grid-template-columns:1fr}
+    .grid,.filters,.summary,.reports-grid{grid-template-columns:1fr}
+    .btn-registrar{width:100%}
     .table-container{display:none}
     .cards{display:block}
-    .actions button{width:100%}
 }
 @media(max-width:420px){
     .stats-grid{grid-template-columns:1fr}
@@ -254,14 +516,25 @@ th{background:#f4f6f8}
 
 <body>
 <div class="app">
-<h2>Registro de Pagos Quintas de Alejandro</h2>
 
-<!-- PANEL DE ESTADÍSTICAS -->
-<div class="stats-panel">
-    <div class="stats-header">
+<!-- CABECERA -->
+<div class="hero-header">
+    <div>
+        <h2>Registro de Pagos · Quintas de Alejandro</h2>
+        <p>Control de administración · 33 viviendas · Cuota mensual fija: $140.000 COP</p>
+    </div>
+    <div class="hero-meta">
+        <span>Meta mensual (33 casas)</span>
+        <strong>$4.620.000 COP</strong>
+    </div>
+</div>
+
+<!-- 1. PANEL DE ESTADÍSTICAS -->
+<div class="section-card">
+    <div class="section-header">
         <div>
-            <h3>📊 Estadísticas del Mes</h3>
-            <small>33 casas · Cuota mensual fija: $140.000 COP</small>
+            <h3 class="section-title">📊 Panel de Estadísticas Mensuales</h3>
+            <p class="section-subtitle">Consulta el estado de recaudo de cualquier mes sin afectar los filtros del historial</p>
         </div>
         <div class="stats-month-selector">
             <label for="mesEstadisticas">Mes a consultar:</label>
@@ -270,17 +543,17 @@ th{background:#f4f6f8}
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card highlight-green">
             <div class="stat-label">Recaudo real del mes</div>
             <div class="stat-value green" id="statRecaudoReal">$0</div>
             <div class="stat-sub" id="statConteoPagosMes">0 pagos registrados</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card highlight-blue">
             <div class="stat-label">Recaudo esperado</div>
             <div class="stat-value blue" id="statRecaudoEsperado">$4.620.000</div>
             <div class="stat-sub">33 casas × $140.000</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card highlight-amber">
             <div class="stat-label">Dinero pendiente estimado</div>
             <div class="stat-value orange" id="statDineroPendiente">$4.620.000</div>
             <div class="stat-sub" id="statSubPendiente">33 casas pendientes × $140.000</div>
@@ -321,57 +594,138 @@ th{background:#f4f6f8}
     <div class="stats-warning" id="statAdvertenciaCuota"></div>
 </div>
 
-<!-- FORM -->
-<div class="grid">
-    <input id="casa" type="number" min="1" max="33" placeholder="Casa (1 a 33)">
-    <input id="fecha" type="date">
-    <select id="tipo">
-        <option value="">Tipo</option>
-        <option>Efectivo</option>
-        <option>Transferencia</option>
-    </select>
-    <input id="valor" placeholder="Valor $">
-    <textarea id="nota" rows="1" placeholder="Nota"></textarea>
-</div>
-<button onclick="guardarPago()">Registrar pago</button>
+<!-- 2. INTERFAZ DE REGISTRO DE PAGO -->
+<div class="section-card">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">➕ Registrar Nuevo Pago</h3>
+            <p class="section-subtitle">Ingresa los datos del pago. Se valida automáticamente que la casa corresponda a las viviendas 1 a 33.</p>
+        </div>
+        <button type="button" class="btn-quick" onclick="valor.value='140000'">
+            Usar cuota $140.000
+        </button>
+    </div>
 
-<!-- FILTER -->
-<div class="filters">
-    <input type="month" id="mes">
-    <input placeholder="Casa" id="casaFiltro">
-    <select id="tipoFiltro">
-        <option value="">Tipo</option>
-        <option>Efectivo</option>
-        <option>Transferencia</option>
-    </select>
-    <button onclick="filtrar()">Filtrar</button>
-    <button onclick="limpiarFiltro()">Limpiar</button>
-</div>
+    <div class="grid">
+        <div>
+            <label class="field-label" for="casa">Vivienda (1 a 33)</label>
+            <input id="casa" type="number" min="1" max="33" placeholder="Ej: 12">
+        </div>
+        <div>
+            <label class="field-label" for="fecha">Fecha de pago</label>
+            <input id="fecha" type="date">
+        </div>
+        <div>
+            <label class="field-label" for="tipo">Medio de pago</label>
+            <select id="tipo">
+                <option value="">Seleccionar...</option>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+            </select>
+        </div>
+        <div>
+            <label class="field-label" for="valor">Valor pagado ($ COP)</label>
+            <input id="valor" placeholder="Ej: 140000">
+        </div>
+        <div>
+            <label class="field-label" for="nota">Nota u observación</label>
+            <textarea id="nota" rows="1" placeholder="Opcional"></textarea>
+        </div>
+    </div>
 
-<!-- TABLE -->
-<div class="table-container">
-<table>
-<thead>
-<tr><th>Casa</th><th>Fecha</th><th>Tipo</th><th>Valor</th><th>Nota</th><th></th></tr>
-</thead>
-<tbody id="tabla"></tbody>
-</table>
-</div>
-
-<!-- CARDS -->
-<div class="cards" id="cards"></div>
-
-<!-- TOTAL -->
-<div class="summary">
-    <div id="totalGeneral">Total general: $0</div>
-    <div id="totalFiltro">Total filtrado: $0</div>
+    <div class="form-footer">
+        <button class="btn-registrar" onclick="guardarPago()">✓ Registrar pago</button>
+    </div>
 </div>
 
-<!-- ACTIONS -->
-<div class="actions">
-    <button onclick="exportarPDF()">📄 PDF Resumen</button>
-    <button onclick="exportarPDFDetalle()">🧾 PDF Detallado</button>
+<!-- 3. HISTORIAL, FILTROS Y VISTA DE PAGOS -->
+<div class="section-card">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">📋 Historial y Consulta de Pagos</h3>
+            <p class="section-subtitle">Filtra registros específicos por mes, vivienda o medio de pago</p>
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="filters-box">
+        <div class="filters">
+            <div>
+                <label class="field-label" for="mes">Filtrar por mes</label>
+                <input type="month" id="mes">
+            </div>
+            <div>
+                <label class="field-label" for="casaFiltro">Filtrar por casa</label>
+                <input placeholder="Ej: 5" id="casaFiltro">
+            </div>
+            <div>
+                <label class="field-label" for="tipoFiltro">Medio de pago</label>
+                <select id="tipoFiltro">
+                    <option value="">Todos</option>
+                    <option>Efectivo</option>
+                    <option>Transferencia</option>
+                </select>
+            </div>
+            <button onclick="filtrar()">🔍 Filtrar</button>
+            <button class="btn-secondary" onclick="limpiarFiltro()">↺ Limpiar</button>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Casa</th>
+                    <th>Fecha</th>
+                    <th>Medio de Pago</th>
+                    <th>Valor</th>
+                    <th>Nota</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+        </table>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards" id="cards"></div>
+
+    <!-- TOTAL -->
+    <div class="summary">
+        <div class="summary-box" id="totalGeneral">Total general: $0</div>
+        <div class="summary-box filtered" id="totalFiltro">Total filtrado: $0</div>
+    </div>
 </div>
+
+<!-- 4. DESCARGA DE REPORTES PDF -->
+<div class="section-card">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">📥 Descarga de Reportes en PDF</h3>
+            <p class="section-subtitle">Los documentos PDF se generan con base en los pagos actualmente visibles en la lista (filtrados o totales)</p>
+        </div>
+    </div>
+
+    <div class="reports-grid">
+        <div class="report-card">
+            <div>
+                <h4>📄 Reporte Ejecutivo por Casa</h4>
+                <p>Genera un documento consolidado con el total acumulado por cada vivienda ordenado numéricamente y el gran total recaudado.</p>
+            </div>
+            <button class="btn-pdf-resumen" onclick="exportarPDF()">📄 Descargar PDF Resumen</button>
+        </div>
+
+        <div class="report-card">
+            <div>
+                <h4>🧾 Reporte Detallado de Movimientos</h4>
+                <p>Genera el listado completo de pagos indicando fecha exacta, vivienda, medio de pago (Efectivo/Transferencia), nota y valor.</p>
+            </div>
+            <button class="btn-pdf-detalle" onclick="exportarPDFDetalle()">🧾 Descargar PDF Detallado</button>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -541,6 +895,11 @@ function mostrar(lista){
 
     let total=0;
 
+    if(listaOrdenada.length === 0){
+        tabla.innerHTML = `<tr><td colspan="6" style="padding:24px;color:#64748b;">No hay pagos registrados para mostrar.</td></tr>`;
+        cards.innerHTML = `<div class="card" style="text-align:center;color:#64748b;">No hay pagos registrados para mostrar.</div>`;
+    }
+
     listaOrdenada.forEach((p)=>{
         total += Number(p.valor) || 0;
         const infoDiferencia = obtenerHTMLDiferencia(p.valor);
@@ -548,21 +907,30 @@ function mostrar(lista){
 
         tabla.innerHTML+=`
         <tr>
-            <td>${p.casa}</td>
+            <td class="casa-pill">Casa ${p.casa}</td>
             <td>${p.fecha}</td>
-            <td>${p.tipo}</td>
-            <td>${formato(p.valor)}${infoDiferencia}</td>
-            <td>${p.nota||""}</td>
-            <td class="delete" onclick="borrar(${indiceReal})">🗑️</td>
+            <td class="tipo-text">${p.tipo}</td>
+            <td class="valor-cell">${formato(p.valor)}${infoDiferencia}</td>
+            <td>${p.nota||"—"}</td>
+            <td><span class="delete" onclick="borrar(${indiceReal})">🗑️ Eliminar</span></td>
         </tr>`;
 
         cards.innerHTML+=`
         <div class="card">
-            <h4>Casa ${p.casa}</h4>
-            <small>${p.fecha} · ${p.tipo}</small>
-            <p><b>${formato(p.valor)}</b>${infoDiferencia}</p>
-            <small>${p.nota||""}</small><br>
-            <span class="delete" onclick="borrar(${indiceReal})">Eliminar</span>
+            <div class="card-top">
+                <div>
+                    <h4>Casa ${p.casa}</h4>
+                    <small>${p.fecha} · ${p.tipo}</small>
+                </div>
+                <div class="card-valor">
+                    ${formato(p.valor)}
+                    ${infoDiferencia}
+                </div>
+            </div>
+            <div class="card-footer">
+                <small>${p.nota||"Sin nota"}</small>
+                <span class="delete" onclick="borrar(${indiceReal})">🗑️ Eliminar</span>
+            </div>
         </div>`;
     });
 
@@ -618,36 +986,83 @@ function limpiarCampos(){
     fecha.value = `${a}-${m}-${d}`;
 }
 
-/* PDF */
+/* PDF MODERNIZADOS */
 function exportarPDF(){
     const d = new jsPDF();
 
-    let y = 20;
     let resumen = {};
+    let conteo = {};
     let totalGeneral = 0;
 
     pagosFiltrados.forEach(p=>{
         const claveCasa = normalizarCasa(p.casa) || p.casa;
-        resumen[claveCasa] = (resumen[claveCasa] || 0) + (Number(p.valor) || 0);
-        totalGeneral += (Number(p.valor) || 0);
+        const monto = Number(p.valor) || 0;
+        resumen[claveCasa] = (resumen[claveCasa] || 0) + monto;
+        conteo[claveCasa] = (conteo[claveCasa] || 0) + 1;
+        totalGeneral += monto;
     });
 
     const casasOrdenadas = Object.keys(resumen).sort(
         (a,b) => Number(a) - Number(b)
     );
 
-    d.text("Resumen de Pagos por Casa",10,10);
+    // Encabezado ejecutivo
+    d.setFillColor(30, 58, 138);
+    d.rect(0, 0, 210, 30, "F");
+    d.setTextColor(255, 255, 255);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(15);
+    d.text("QUINTAS DE ALEJANDRO", 14, 13);
+    d.setFont("helvetica", "normal");
+    d.setFontSize(10);
+    d.text("Reporte Ejecutivo · Resumen de Pagos por Casa", 14, 21);
 
-    casasOrdenadas.forEach(casa=>{
-        d.text(`Casa ${casa}: ${formato(resumen[casa])}`,10,y);
-        y += 8;
-        if(y > 275){
+    let y = 40;
+
+    // Cabecera de tabla
+    d.setFillColor(241, 245, 249);
+    d.rect(14, y - 6, 182, 9, "F");
+    d.setTextColor(30, 41, 59);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(10);
+    d.text("Vivienda", 18, y);
+    d.text("Pagos Reg.", 95, y);
+    d.text("Total Acumulado", 192, y, { align: "right" });
+
+    y += 8;
+    d.setFont("helvetica", "normal");
+
+    casasOrdenadas.forEach((casa, idx)=>{
+        if(y > 270){
             d.addPage();
-            y = 15;
+            y = 20;
         }
+        if(idx % 2 === 1){
+            d.setFillColor(248, 250, 252);
+            d.rect(14, y - 5.5, 182, 8, "F");
+        }
+        d.setTextColor(30, 41, 59);
+        d.text(`Casa ${casa}`, 18, y);
+        d.text(`${conteo[casa]} pago(s)`, 95, y);
+        d.setFont("helvetica", "bold");
+        d.text(`${formato(resumen[casa])}`, 192, y, { align: "right" });
+        d.setFont("helvetica", "normal");
+        y += 8;
     });
 
-    d.text(`TOTAL GENERAL: ${formato(totalGeneral)}`,10,y+10);
+    if(y > 265){
+        d.addPage();
+        y = 25;
+    }
+
+    y += 4;
+    d.setFillColor(239, 246, 255);
+    d.rect(14, y - 6, 182, 12, "F");
+    d.setTextColor(30, 58, 138);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(12);
+    d.text("TOTAL GENERAL:", 18, y + 2);
+    d.text(`${formato(totalGeneral)}`, 192, y + 2, { align: "right" });
 
     d.save("resumen.pdf");
 }
@@ -655,30 +1070,81 @@ function exportarPDF(){
 function exportarPDFDetalle(){
     const d = new jsPDF();
 
-    let y = 15;
-    let t = 0;
-
     const pagosOrdenados = [...pagosFiltrados].sort(
         (a,b) => Number(normalizarCasa(a.casa)) - Number(normalizarCasa(b.casa))
     );
 
-    pagosOrdenados.forEach(p=>{
-        d.text(
-            `${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,
-            10,
-            y
-        );
+    // Encabezado ejecutivo
+    d.setFillColor(30, 58, 138);
+    d.rect(0, 0, 210, 30, "F");
+    d.setTextColor(255, 255, 255);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(15);
+    d.text("QUINTAS DE ALEJANDRO", 14, 13);
+    d.setFont("helvetica", "normal");
+    d.setFontSize(10);
+    d.text("Reporte Detallado de Pagos Registrados", 14, 21);
 
-        y += 6;
-        t += (Number(p.valor) || 0);
+    let y = 40;
+    let t = 0;
 
-        if(y > 280){
+    // Cabecera de columnas
+    d.setFillColor(241, 245, 249);
+    d.rect(14, y - 6, 182, 9, "F");
+    d.setTextColor(30, 41, 59);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(9.5);
+    d.text("Fecha", 18, y);
+    d.text("Vivienda", 50, y);
+    d.text("Medio", 84, y);
+    d.text("Nota", 120, y);
+    d.text("Valor", 192, y, { align: "right" });
+
+    y += 8;
+    d.setFont("helvetica", "normal");
+    d.setFontSize(9);
+
+    pagosOrdenados.forEach((p, idx)=>{
+        if(y > 272){
             d.addPage();
-            y = 15;
+            y = 20;
         }
+        if(idx % 2 === 1){
+            d.setFillColor(248, 250, 252);
+            d.rect(14, y - 5, 182, 7.5, "F");
+        }
+
+        const monto = Number(p.valor) || 0;
+        t += monto;
+        const notaCorta = String(p.nota || "-").substring(0, 22);
+
+        d.setTextColor(30, 41, 59);
+        d.text(`${p.fecha || ""}`, 18, y);
+        d.setFont("helvetica", "bold");
+        d.text(`Casa ${p.casa}`, 50, y);
+        d.setFont("helvetica", "normal");
+        d.text(`${p.tipo || ""}`, 84, y);
+        d.text(notaCorta, 120, y);
+        d.setFont("helvetica", "bold");
+        d.text(`${formato(monto)}`, 192, y, { align: "right" });
+        d.setFont("helvetica", "normal");
+
+        y += 7.5;
     });
 
-    d.text("TOTAL: "+formato(t),10,y+10);
+    if(y > 265){
+        d.addPage();
+        y = 25;
+    }
+
+    y += 4;
+    d.setFillColor(239, 246, 255);
+    d.rect(14, y - 6, 182, 12, "F");
+    d.setTextColor(30, 58, 138);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(12);
+    d.text(`TOTAL (${pagosOrdenados.length} pagos):`, 18, y + 2);
+    d.text(formato(t), 192, y + 2, { align: "right" });
 
     d.save("detalle.pdf");
 }
