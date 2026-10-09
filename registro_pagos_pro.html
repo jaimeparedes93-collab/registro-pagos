@@ -13,10 +13,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+*{
+    box-sizing:border-box;
+}
 body{
-    font-family:"Segoe UI",Arial;
+    font-family:"Segoe UI",Arial,sans-serif;
     background:#eef1f5;
     margin:0;
+    color:#1e293b;
 }
 .app{
     max-width:1100px;
@@ -26,7 +30,10 @@ body{
     border-radius:12px;
     box-shadow:0 8px 20px rgba(0,0,0,.1);
 }
-h2{text-align:center;}
+h2{
+    text-align:center;
+    margin-top:5px;
+}
 
 input,select,textarea,button{
     padding:10px;
@@ -41,14 +48,145 @@ button{
     background:#2c7be5;
     color:white;
     border:none;
+    cursor:pointer;
+    font-weight:600;
 }
 button:active{opacity:.8}
+
+/* PANEL DE ESTADÍSTICAS */
+.stats-panel{
+    background:#f8fafd;
+    border:1px solid #dce6f4;
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:18px;
+}
+.stats-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e2e8f0;
+}
+.stats-header h3{
+    margin:0;
+    font-size:16px;
+    color:#1e3a5f;
+}
+.stats-header small{
+    display:block;
+    color:#64748b;
+    font-size:12px;
+    margin-top:2px;
+}
+.stats-month-selector{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.stats-month-selector label{
+    font-size:13px;
+    font-weight:600;
+    white-space:nowrap;
+}
+.stats-month-selector input{
+    width:auto;
+    padding:7px 10px;
+    background:white;
+}
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:12px;
+}
+.stat-card{
+    background:white;
+    border:1px solid #e5eaf2;
+    border-radius:8px;
+    padding:10px 12px;
+    box-shadow:0 2px 4px rgba(0,0,0,.03);
+}
+.stat-label{
+    font-size:12px;
+    color:#64748b;
+    margin-bottom:4px;
+}
+.stat-value{
+    font-size:17px;
+    font-weight:700;
+    color:#0f172a;
+}
+.stat-value.green{color:#16794b;}
+.stat-value.blue{color:#2c7be5;}
+.stat-value.orange{color:#c2410c;}
+.stat-sub{
+    font-size:11px;
+    color:#64748b;
+    margin-top:3px;
+}
+
+/* BARRA DE PROGRESO */
+.progress-wrapper{
+    margin-top:6px;
+}
+.progress-labels{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:5px;
+    color:#334155;
+}
+.progress-track{
+    width:100%;
+    height:12px;
+    background:#e2e8f0;
+    border-radius:999px;
+    overflow:hidden;
+}
+.progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#2c7be5,#16794b);
+    border-radius:999px;
+    transition:width .3s ease;
+}
+
+/* ADVERTENCIAS DE DIFERENCIA DE CUOTA */
+.diff-badge{
+    display:inline-block;
+    margin-top:3px;
+    padding:2px 6px;
+    font-size:11px;
+    font-weight:600;
+    color:#9a3412;
+    background:#ffedd5;
+    border:1px solid #fdba74;
+    border-radius:4px;
+}
+.stats-warning{
+    display:none;
+    margin-top:10px;
+    padding:9px 12px;
+    background:#fffbeb;
+    border:1px solid #fcd34d;
+    border-radius:8px;
+    font-size:12px;
+    color:#92400e;
+}
 
 .grid,.filters{
     display:grid;
     grid-template-columns:repeat(5,1fr);
     gap:10px;
     margin-bottom:10px;
+}
+.filters{
+    margin-top:10px;
 }
 
 .table-container{overflow-x:auto}
@@ -93,12 +231,23 @@ th{background:#f4f6f8}
     justify-content:flex-end;
     margin-top:10px;
 }
+.actions button{
+    width:auto;
+    padding:10px 16px;
+}
 
 /* 📱 MOBILE */
 @media(max-width:768px){
+    .stats-grid{grid-template-columns:repeat(2,1fr)}
+    .stats-month-selector{width:100%;justify-content:space-between}
+    .stats-month-selector input{flex:1}
     .grid,.filters{grid-template-columns:1fr}
     .table-container{display:none}
     .cards{display:block}
+    .actions button{width:100%}
+}
+@media(max-width:420px){
+    .stats-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -107,9 +256,74 @@ th{background:#f4f6f8}
 <div class="app">
 <h2>Registro de Pagos Quintas de Alejandro</h2>
 
+<!-- PANEL DE ESTADÍSTICAS -->
+<div class="stats-panel">
+    <div class="stats-header">
+        <div>
+            <h3>📊 Estadísticas del Mes</h3>
+            <small>33 casas · Cuota mensual fija: $140.000 COP</small>
+        </div>
+        <div class="stats-month-selector">
+            <label for="mesEstadisticas">Mes a consultar:</label>
+            <input type="month" id="mesEstadisticas" onchange="actualizarEstadisticas()">
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Recaudo real del mes</div>
+            <div class="stat-value green" id="statRecaudoReal">$0</div>
+            <div class="stat-sub" id="statConteoPagosMes">0 pagos registrados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Recaudo esperado</div>
+            <div class="stat-value blue" id="statRecaudoEsperado">$4.620.000</div>
+            <div class="stat-sub">33 casas × $140.000</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Dinero pendiente estimado</div>
+            <div class="stat-value orange" id="statDineroPendiente">$4.620.000</div>
+            <div class="stat-sub" id="statSubPendiente">33 casas pendientes × $140.000</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Cumplimiento por casas</div>
+            <div class="stat-value" id="statCumplimiento">0%</div>
+            <div class="stat-sub" id="statCasasResumen">Pagadas: 0 · Pendientes: 33</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Cantidad de casas pagadas</div>
+            <div class="stat-value green" id="statCasasPagadas">0 / 33</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Cantidad de casas pendientes</div>
+            <div class="stat-value orange" id="statCasasPendientes">33 / 33</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Recaudo en efectivo</div>
+            <div class="stat-value" id="statEfectivo">$0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Recaudo por transferencia</div>
+            <div class="stat-value" id="statTransferencia">$0</div>
+        </div>
+    </div>
+
+    <div class="progress-wrapper">
+        <div class="progress-labels">
+            <span id="statTextoBarra">Progreso mensual (0 de 33 casas)</span>
+            <span id="statPorcentajeBarra">0%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="statBarraProgreso"></div>
+        </div>
+    </div>
+
+    <div class="stats-warning" id="statAdvertenciaCuota"></div>
+</div>
+
 <!-- FORM -->
 <div class="grid">
-    <input id="casa" placeholder="Casa">
+    <input id="casa" type="number" min="1" max="33" placeholder="Casa (1 a 33)">
     <input id="fecha" type="date">
     <select id="tipo">
         <option value="">Tipo</option>
@@ -117,7 +331,7 @@ th{background:#f4f6f8}
         <option>Transferencia</option>
     </select>
     <input id="valor" placeholder="Valor $">
-    <textarea id="nota" placeholder="Nota"></textarea>
+    <textarea id="nota" rows="1" placeholder="Nota"></textarea>
 </div>
 <button onclick="guardarPago()">Registrar pago</button>
 
@@ -163,188 +377,314 @@ th{background:#f4f6f8}
 <script>
 const { jsPDF } = window.jspdf;
 
-const formato = v => v.toLocaleString("es-CO",{style:"currency",currency:"COP",minimumFractionDigits:0});
+const TOTAL_CASAS = 33;
+const CUOTA_MENSUAL = 140000;
+const RECAUDO_ESPERADO = TOTAL_CASAS * CUOTA_MENSUAL;
 
-let pagos = JSON.parse(localStorage.getItem("pagos")) || [];
-let pagosFiltrados=[...pagos];
-fecha.valueAsDate=new Date();
-
-function guardarPago(){
-let v = valor.value.replace(/\D/g,"");
-
-if(!casa.value || !fecha.value || !tipo.value || !v){
-    return alert("Complete todo");
-}
-
-const mesPago = fecha.value.substring(0,7);
-
-const existePago = pagos.some(p =>
-p.casa === casa.value &&
-p.fecha.substring(0,7) === mesPago
-);
-
-if(existePago){
-alert(`La casa ${casa.value} ya tiene un pago registrado para este mes.`);
-return;
-}
-
-pagos.push({
-    casa:casa.value,
-    fecha:fecha.value,
-    tipo:tipo.value,
-    valor:+v,
-    nota:nota.value
+const formato = v => Number(v || 0).toLocaleString("es-CO",{
+    style:"currency",
+    currency:"COP",
+    minimumFractionDigits:0,
+    maximumFractionDigits:0
 });
 
-pagosFiltrados = [...pagos];
+/* Normaliza en memoria ("01" -> "1") sin alterar los registros existentes en localStorage */
+function normalizarCasa(valor){
+    const limpio = String(valor ?? "").trim();
+    if(/^\d+$/.test(limpio)){
+        return String(parseInt(limpio, 10));
+    }
+    return limpio;
+}
 
-localStorage.setItem("pagos", JSON.stringify(pagos));
+function esCasaValida(valor){
+    const norm = normalizarCasa(valor);
+    if(!/^\d+$/.test(norm)) return false;
+    const numero = parseInt(norm, 10);
+    return numero >= 1 && numero <= TOTAL_CASAS;
+}
 
-limpiarCampos();
-mostrar(pagos);
+function obtenerHTMLDiferencia(valorPago){
+    const monto = Number(valorPago) || 0;
+    const dif = monto - CUOTA_MENSUAL;
+    if(dif === 0) return "";
+    const signo = dif > 0 ? "+" : "";
+    return `<br><span class="diff-badge">⚠️ Dif. cuota: ${signo}${formato(dif)}</span>`;
+}
 
+let pagos = JSON.parse(localStorage.getItem("pagos")) || [];
+let pagosFiltrados = [...pagos];
+
+const hoy = new Date();
+const anioActual = hoy.getFullYear();
+const mesActual = String(hoy.getMonth() + 1).padStart(2, "0");
+const diaActual = String(hoy.getDate()).padStart(2, "0");
+
+fecha.value = `${anioActual}-${mesActual}-${diaActual}`;
+mesEstadisticas.value = `${anioActual}-${mesActual}`;
+
+function actualizarEstadisticas(){
+    const mesSeleccionado = mesEstadisticas.value;
+    const pagosDelMes = pagos.filter(p =>
+        p && typeof p.fecha === "string" && p.fecha.substring(0,7) === mesSeleccionado
+    );
+
+    let recaudoReal = 0;
+    let recaudoEfectivo = 0;
+    let recaudoTransferencia = 0;
+    const casasPagadasSet = new Set();
+    const diferenciasMes = [];
+
+    pagosDelMes.forEach(p => {
+        const monto = Number(p.valor) || 0;
+        recaudoReal += monto;
+
+        if(p.tipo === "Efectivo"){
+            recaudoEfectivo += monto;
+        } else if(p.tipo === "Transferencia"){
+            recaudoTransferencia += monto;
+        }
+
+        const casaNorm = normalizarCasa(p.casa);
+        const numCasa = parseInt(casaNorm, 10);
+        if(!isNaN(numCasa) && numCasa >= 1 && numCasa <= TOTAL_CASAS){
+            casasPagadasSet.add(casaNorm);
+        } else if(casaNorm){
+            casasPagadasSet.add(casaNorm);
+        }
+
+        if(monto !== CUOTA_MENSUAL){
+            const dif = monto - CUOTA_MENSUAL;
+            const signo = dif > 0 ? "+" : "";
+            diferenciasMes.push(`Casa ${p.casa}: ${formato(monto)} (${signo}${formato(dif)})`);
+        }
+    });
+
+    const cantidadPagadas = Math.min(casasPagadasSet.size, TOTAL_CASAS);
+    const cantidadPendientes = Math.max(0, TOTAL_CASAS - cantidadPagadas);
+    const dineroPendiente = cantidadPendientes * CUOTA_MENSUAL;
+    const porcentaje = (cantidadPagadas / TOTAL_CASAS) * 100;
+    const porcentajeTexto = Number.isInteger(porcentaje) ? `${porcentaje}%` : `${porcentaje.toFixed(1)}%`;
+
+    statRecaudoReal.innerText = formato(recaudoReal);
+    statConteoPagosMes.innerText = `${pagosDelMes.length} pago(s) registrado(s)`;
+    statRecaudoEsperado.innerText = formato(RECAUDO_ESPERADO);
+    statDineroPendiente.innerText = formato(dineroPendiente);
+    statSubPendiente.innerText = `${cantidadPendientes} casas pendientes × ${formato(CUOTA_MENSUAL)}`;
+    statCumplimiento.innerText = porcentajeTexto;
+    statCasasResumen.innerText = `Pagadas: ${cantidadPagadas} · Pendientes: ${cantidadPendientes}`;
+    statCasasPagadas.innerText = `${cantidadPagadas} / ${TOTAL_CASAS}`;
+    statCasasPendientes.innerText = `${cantidadPendientes} / ${TOTAL_CASAS}`;
+    statEfectivo.innerText = formato(recaudoEfectivo);
+    statTransferencia.innerText = formato(recaudoTransferencia);
+
+    statTextoBarra.innerText = `Progreso mensual (${cantidadPagadas} de ${TOTAL_CASAS} casas)`;
+    statPorcentajeBarra.innerText = porcentajeTexto;
+    statBarraProgreso.style.width = `${Math.min(100, Math.max(0, porcentaje))}%`;
+
+    if(diferenciasMes.length > 0){
+        statAdvertenciaCuota.style.display = "block";
+        statAdvertenciaCuota.innerHTML = `<b>⚠️ Pagos con valor distinto a la cuota fija (${formato(CUOTA_MENSUAL)}):</b> ${diferenciasMes.join(" · ")}`;
+    } else {
+        statAdvertenciaCuota.style.display = "none";
+        statAdvertenciaCuota.innerHTML = "";
+    }
+}
+
+function guardarPago(){
+    let v = valor.value.replace(/\D/g,"");
+
+    if(!casa.value || !fecha.value || !tipo.value || !v){
+        return alert("Complete todo");
+    }
+
+    if(!esCasaValida(casa.value)){
+        return alert("Ingrese un número de casa válido entre 1 y 33.");
+    }
+
+    const casaNormalizada = normalizarCasa(casa.value);
+    const mesPago = fecha.value.substring(0,7);
+
+    const existePago = pagos.some(p =>
+        normalizarCasa(p.casa) === casaNormalizada &&
+        p.fecha &&
+        p.fecha.substring(0,7) === mesPago
+    );
+
+    if(existePago){
+        alert(`La casa ${casaNormalizada} ya tiene un pago registrado para este mes.`);
+        return;
+    }
+
+    pagos.push({
+        casa:casaNormalizada,
+        fecha:fecha.value,
+        tipo:tipo.value,
+        valor:+v,
+        nota:nota.value
+    });
+
+    localStorage.setItem("pagos", JSON.stringify(pagos));
+
+    limpiarCampos();
+    aplicarFiltroActual();
+    actualizarEstadisticas();
 }
 
 function mostrar(lista){
+    const listaOrdenada = [...lista].sort(
+        (a,b) => Number(normalizarCasa(a.casa)) - Number(normalizarCasa(b.casa))
+    );
 
-const listaOrdenada = [...lista].sort(
-    (a,b) => Number(a.casa) - Number(b.casa)
-);
+    tabla.innerHTML="";
+    cards.innerHTML="";
 
-tabla.innerHTML="";
-cards.innerHTML="";
+    let total=0;
 
-let total=0;
+    listaOrdenada.forEach((p)=>{
+        total += Number(p.valor) || 0;
+        const infoDiferencia = obtenerHTMLDiferencia(p.valor);
+        const indiceReal = pagos.indexOf(p);
 
-listaOrdenada.forEach((p)=>{
+        tabla.innerHTML+=`
+        <tr>
+            <td>${p.casa}</td>
+            <td>${p.fecha}</td>
+            <td>${p.tipo}</td>
+            <td>${formato(p.valor)}${infoDiferencia}</td>
+            <td>${p.nota||""}</td>
+            <td class="delete" onclick="borrar(${indiceReal})">🗑️</td>
+        </tr>`;
 
-    total+=p.valor;
+        cards.innerHTML+=`
+        <div class="card">
+            <h4>Casa ${p.casa}</h4>
+            <small>${p.fecha} · ${p.tipo}</small>
+            <p><b>${formato(p.valor)}</b>${infoDiferencia}</p>
+            <small>${p.nota||""}</small><br>
+            <span class="delete" onclick="borrar(${indiceReal})">Eliminar</span>
+        </div>`;
+    });
 
-    tabla.innerHTML+=`
-    <tr>
-        <td>${p.casa}</td>
-        <td>${p.fecha}</td>
-        <td>${p.tipo}</td>
-        <td>${formato(p.valor)}</td>
-        <td>${p.nota||""}</td>
-        <td class="delete" onclick="borrar(${pagos.indexOf(p)})">🗑️</td>
-    </tr>`;
-
-    cards.innerHTML+=`
-    <div class="card">
-        <h4>Casa ${p.casa}</h4>
-        <small>${p.fecha} · ${p.tipo}</small>
-        <p><b>${formato(p.valor)}</b></p>
-        <small>${p.nota||""}</small><br>
-        <span class="delete" onclick="borrar(${pagos.indexOf(p)})">Eliminar</span>
-    </div>`;
-});
-
-totalFiltro.innerText="Total filtrado: "+formato(total);
-totalGeneral.innerText="Total general: "+formato(pagos.reduce((s,p)=>s+p.valor,0));
-
+    totalFiltro.innerText="Total filtrado: "+formato(total);
+    totalGeneral.innerText="Total general: "+formato(pagos.reduce((s,p)=>s+(Number(p.valor)||0),0));
 }
 
 function borrar(i){
+    if(i < 0 || i >= pagos.length) return;
     if(confirm("Eliminar pago?")){
         pagos.splice(i,1);
         localStorage.setItem("pagos",JSON.stringify(pagos));
+        aplicarFiltroActual();
+        actualizarEstadisticas();
+    }
+}
+
+function aplicarFiltroActual(){
+    const hayFiltro = mes.value || casaFiltro.value.trim() || tipoFiltro.value;
+    if(hayFiltro){
+        filtrar();
+    } else {
+        pagosFiltrados = [...pagos];
         mostrar(pagos);
     }
 }
 
 function filtrar(){
+    const filtroCasaNorm = normalizarCasa(casaFiltro.value);
     pagosFiltrados=pagos.filter(p=>
-        (!mes.value||p.fecha.startsWith(mes.value)) &&
-        (!casaFiltro.value||p.casa.includes(casaFiltro.value)) &&
-        (!tipoFiltro.value||p.tipo===tipoFiltro.value)
+        (!mes.value || (p.fecha && p.fecha.startsWith(mes.value))) &&
+        (!casaFiltro.value.trim() || String(p.casa).includes(casaFiltro.value.trim()) || normalizarCasa(p.casa) === filtroCasaNorm) &&
+        (!tipoFiltro.value || p.tipo===tipoFiltro.value)
     );
     mostrar(pagosFiltrados);
 }
+
 function limpiarFiltro(){
+    mes.value = "";
+    casaFiltro.value = "";
+    tipoFiltro.value = "";
 
-mes.value = "";
-casaFiltro.value = "";
-tipoFiltro.value = "";
-
-pagosFiltrados = [...pagos];
-
-mostrar(pagos);
-
+    pagosFiltrados = [...pagos];
+    mostrar(pagos);
 }
 
 function limpiarCampos(){
     casa.value=valor.value=nota.value=tipo.value="";
-    fecha.valueAsDate=new Date();
+    const ahora = new Date();
+    const a = ahora.getFullYear();
+    const m = String(ahora.getMonth() + 1).padStart(2, "0");
+    const d = String(ahora.getDate()).padStart(2, "0");
+    fecha.value = `${a}-${m}-${d}`;
 }
 
 /* PDF */
 function exportarPDF(){
+    const d = new jsPDF();
 
-const d = new jsPDF();
+    let y = 20;
+    let resumen = {};
+    let totalGeneral = 0;
 
-let y = 20;
-let resumen = {};
-let totalGeneral = 0;
+    pagosFiltrados.forEach(p=>{
+        const claveCasa = normalizarCasa(p.casa) || p.casa;
+        resumen[claveCasa] = (resumen[claveCasa] || 0) + (Number(p.valor) || 0);
+        totalGeneral += (Number(p.valor) || 0);
+    });
 
-pagosFiltrados.forEach(p=>{
-    resumen[p.casa] = (resumen[p.casa] || 0) + p.valor;
-    totalGeneral += p.valor;
-});
+    const casasOrdenadas = Object.keys(resumen).sort(
+        (a,b) => Number(a) - Number(b)
+    );
 
-const casasOrdenadas = Object.keys(resumen).sort(
-    (a,b) => Number(a) - Number(b)
-);
+    d.text("Resumen de Pagos por Casa",10,10);
 
-d.text("Resumen de Pagos por Casa",10,10);
+    casasOrdenadas.forEach(casa=>{
+        d.text(`Casa ${casa}: ${formato(resumen[casa])}`,10,y);
+        y += 8;
+        if(y > 275){
+            d.addPage();
+            y = 15;
+        }
+    });
 
-casasOrdenadas.forEach(casa=>{
-    d.text(`Casa ${casa}: ${formato(resumen[casa])}`,10,y);
-    y += 8;
-});
+    d.text(`TOTAL GENERAL: ${formato(totalGeneral)}`,10,y+10);
 
-d.text(`TOTAL GENERAL: ${formato(totalGeneral)}`,10,y+10);
-
-d.save("resumen.pdf");
-
-
+    d.save("resumen.pdf");
 }
 
 function exportarPDFDetalle(){
+    const d = new jsPDF();
 
-const d = new jsPDF();
+    let y = 15;
+    let t = 0;
 
-let y = 15;
-let t = 0;
-
-const pagosOrdenados = [...pagosFiltrados].sort(
-    (a,b) => Number(a.casa) - Number(b.casa)
-);
-
-pagosOrdenados.forEach(p=>{
-
-    d.text(
-        `${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,
-        10,
-        y
+    const pagosOrdenados = [...pagosFiltrados].sort(
+        (a,b) => Number(normalizarCasa(a.casa)) - Number(normalizarCasa(b.casa))
     );
 
-    y += 6;
-    t += p.valor;
+    pagosOrdenados.forEach(p=>{
+        d.text(
+            `${p.fecha} | Casa ${p.casa} | ${p.tipo} | ${formato(p.valor)}`,
+            10,
+            y
+        );
 
-    if(y > 280){
-        d.addPage();
-        y = 15;
-    }
-});
+        y += 6;
+        t += (Number(p.valor) || 0);
 
-d.text("TOTAL: "+formato(t),10,y+10);
+        if(y > 280){
+            d.addPage();
+            y = 15;
+        }
+    });
 
-d.save("detalle.pdf");
+    d.text("TOTAL: "+formato(t),10,y+10);
 
+    d.save("detalle.pdf");
 }
 
 mostrar(pagos);
+actualizarEstadisticas();
 
 /* SERVICE WORKER */
 if("serviceWorker"in navigator){
